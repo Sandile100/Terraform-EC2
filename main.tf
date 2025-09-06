@@ -65,3 +65,21 @@ resource "aws_security_group" "dev_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
+resource "aws_key_pair" "dev_auth" {
+  key_name   = "dev_auth"
+  public_key = file("~/.ssh/devkey.pub")
+}
+
+resource "aws_instance" "dev_node" {
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.dev_public_subnet.id
+  vpc_security_group_ids      = [aws_security_group.dev_sg.id]
+  key_name                    = aws_key_pair.dev_auth.id
+  associate_public_ip_address = true
+
+  tags = {
+    Name = "dev_node_instance"
+  }
+}
